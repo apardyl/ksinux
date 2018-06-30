@@ -1,21 +1,19 @@
 #!/bin/bash
 
-DIR=$(pwd)
-NCPU=$(nproc)
+set -e
 
-mkdir -p ./deps
+DIR=$(pwd)
+N_CPU=$(nproc)
+
 mkdir -p ./build
 
-source ./configs/versions
+source versions.sh
+source ./functions.sh
 
-if [ ! -d ./build/linux-"$KERNEL_VERSION" ]; then
-	if [ ! -f ./deps/linux-"$KERNEL_VERSION".tar.xz ]; then
-		echo "Fetching linux sources"
-		wget "https://cdn.kernel.org/pub/linux/kernel/v4.x/linux-$KERNEL_VERSION.tar.xz" -O ./deps/linux-"$KERNEL_VERSION".tar.xz
-	fi
-	echo "Unpacking linux"
-	tar -xf ./deps/linux-"$KERNEL_VERSION".tar.xz -C ./build
-	ln -s ../../configs/kernel build/linux-4.16.18/.config
-fi
+prepare_kernel
 
-( cd ./build/linux-"$KERNEL_VERSION" && make -j "$NCPU" )
+( cd ./build/linux-"$KERNEL_VERSION" && make -j "$N_CPU" )
+
+prepare_busybox
+
+( cd ./build/busybox-"$BUSYBOX_VERSION" && make -j "$NCPU" )

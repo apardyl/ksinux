@@ -1,0 +1,4 @@
+#!/bin/bash
+
+KERNEL_VERSION="4.16.18"
+BUSYBOX_VERSION="1.28.4"
