@@ -16,4 +16,4 @@ prepare_kernel
 
 prepare_busybox
 
-( cd ./build/busybox-"$BUSYBOX_VERSION" && make -j "$NCPU" )
+( cd ./build/busybox-"$BUSYBOX_VERSION" && make -j "$N_CPU" )
