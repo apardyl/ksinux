@@ -1,9 +1,36 @@
 #!/bin/sh
 
+source ./functions.sh
+
 # Mount the /dev, /proc and /sys filesystems.
 mount -t devtmpfs none /dev
+if [ $? -ne 0 ]; then
+    echo "Unable to mount /dev"
+    die
+fi
 mount -t proc none /proc
+if [ $? -ne 0 ]; then
+    echo "Unable to mount /proc"
+    die
+fi
 mount -t sysfs none /sys
+if [ $? -ne 0 ]; then
+    echo "Unable to mount /sys"
+    die
+fi
+
+# Setup network
+ip link set eth0 up
+if [ $? -ne 0 ]; then
+    echo "Unable to bring up network device eth0"
+    panic
+fi
+
+udhcpc -n
+if [ $? -ne 0 ]; then
+    echo "DHCP client error"
+    panic
+fi
 
 echo "
      /@@
@@ -31,7 +58,4 @@ uname -a
 echo "This script just starts a shell, TODO: actual init"
 
 # go interactive
-setsid cttyhack sh
-
-# Power off
-echo o > /proc/sysrq-trigger
+panic

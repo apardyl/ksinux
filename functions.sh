@@ -100,6 +100,12 @@ install_libs () {
         "lib64/ld-linux-x86-64.so.2"
         "lib64/libc-2.27.so"
         "lib64/libc.so.6"
+        "lib64/libnss_files-2.27.so"
+        "lib64/libnss_files.so.2"
+        "lib64/libnss_dns-2.27.so"
+        "lib64/libnss_dns.so.2"
+        "lib64/libresolv-2.27.so"
+        "lib64/libresolv.so.2"
     )
 
     mkdir -p ./build/initramfs/{etc,lib64}
@@ -136,7 +142,7 @@ build_busybox () {
 prepare_initramfs () {
     echo "Copying source files"
     mkdir -p ./build/initramfs
-    cp -r ./initramfs ./build/
+    cp -af ./initramfs ./build/
     echo "Creating directory tree"
     mkdir -p ./build/initramfs/{bin,dev,etc,lib,lib64,mnt/root,proc,root,sbin,sys,usr/bin,usr/sbin}
     echo "Creating devices (root required)"
@@ -151,7 +157,7 @@ prepare_initramfs () {
     cp ./build/busybox-"$BUSYBOX_VERSION"/busybox ./build/initramfs/bin/busybox
     echo "sudo chroot ./build/initramfs /bin/busybox sh"
     sudo chroot ./build/initramfs /bin/busybox sh << EOF
-/bin/busybox --install
+/bin/busybox --install -s
 EOF
 }
 
