@@ -4,4 +4,4 @@ set -e
 
 source ./functions.sh
 
-build_kernel
+build_glibc

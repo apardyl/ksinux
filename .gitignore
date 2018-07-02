@@ -2,3 +2,4 @@ deps/
 build/
 *.iml
 .idea/
+vmlinuz*
