@@ -4,4 +4,5 @@ set -e
 
 source ./functions.sh
 
-build_kernel
+build_kernel_image
+build_kernel_modules
