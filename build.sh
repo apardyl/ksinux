@@ -2,7 +2,5 @@
 
 set -e
 
-source ./functions.sh
-
-build_kernel_image
-build_kernel_modules
+./build_boot.sh
+./build_rootfs.sh

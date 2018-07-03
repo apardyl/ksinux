@@ -4,8 +4,8 @@ MENUCONFIG_TYPE=menuconfig
 
 set -e
 
-source ./functions.sh
-source ./versions.sh
+source functions
+source versions
 
 prepare_kernel
 

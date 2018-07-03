@@ -2,6 +2,9 @@
 
 source ./functions.sh
 
+NFS_PATH="192.168.122.1:/srv/nfs"
+SQUASH_FS_PATH="rootfs.squash"
+
 # Mount the /dev, /proc and /sys filesystems.
 mount -t devtmpfs none /dev
 if [ $? -ne 0 ]; then
@@ -19,43 +22,89 @@ if [ $? -ne 0 ]; then
     die
 fi
 
+# Welcome message
+ksilogo
+uname -a
+
 # Setup network
 ip link set eth0 up
 if [ $? -ne 0 ]; then
-    echo "Unable to bring up network device eth0"
-    panic
+    panic "Unable to bring up network device eth0"
 fi
 
 udhcpc -n
 if [ $? -ne 0 ]; then
-    echo "DHCP client error"
-    panic
+    panic "DHCP client error"
 fi
 
-echo "
-     /@@
-     @     @@@@@
-     ,@@.@@@@@
-       @
-      @
-      @
-       @# ,@@@@@@@
-       @@
-     @@
-   @@
-  @@
-  @@
-  @@
-   @@@.
-    @@@@@@@@@@@@@@%
-       @@@@@@@@@@@@&
-                  @@
-                  @@
-                 %@
-           @@@@@@&
-"
-uname -a
-echo "This script just starts a shell, TODO: actual init"
+# Mount rootfs
+info "Mounting NFS $NFS_PATH"
+mount -t nfs4 "$NFS_PATH" /mnt/nfs
+if [ $? -ne 0 ]; then
+    panic "Unable to mount NFS"
+fi
 
-# go interactive
+info "Mounting SquashFS"
+mount -o loop "/mnt/nfs/$SQUASH_FS_PATH" /mnt/ro
+if [ $? -ne 0 ]; then
+    panic "Unable to mount SquashFS"
+fi
+
+info "Mounting RW TmpFS"
+mount -t tmpfs tmpfs /mnt/rw
+if [ $? -ne 0 ]; then
+    panic "Unable to mount TmpFS"
+fi
+
+info "Creating workdir"
+mkdir /mnt/rw/work /mnt/rw/up
+if [ $? -ne 0 ]; then
+    panic "Unable to create workdir"
+fi
+
+info "Mounting OverlayFS"
+mount -t overlay overlay -o lowerdir=/mnt/ro,upperdir=/mnt/rw/up,workdir=/mnt/rw/work /mnt/root
+if [ $? -ne 0 ]; then
+    panic "Unable to mount OverlayFS"
+fi
+
+info "Moving mountpoints inside new rootfs"
+mkdir /mnt/root/mnt/nfs /mnt/root/mnt/ro /mnt/root/mnt/rw
+if [ $? -ne 0 ]; then
+    panic "Unable to create directories in new root"
+fi
+mount -o move /mnt/nfs /mnt/root/mnt/nfs
+if [ $? -ne 0 ]; then
+    panic "Unable to move NFS mountpoint"
+fi
+mount -o move /mnt/ro /mnt/root/mnt/ro
+if [ $? -ne 0 ]; then
+    panic "Unable to move SquashFS mountpoint"
+fi
+mount -o move /mnt/rw /mnt/root/mnt/rw
+if [ $? -ne 0 ]; then
+    panic "Unable to move TmpFS mountpoint"
+fi
+
+# Cleanup
+info "Cleaning up"
+mount -o move /dev /mnt/root/dev
+if [ $? -ne 0 ]; then
+    panic "Unable to move /dev"
+fi
+mount -o move /proc /mnt/root/proc
+if [ $? -ne 0 ]; then
+    panic "Unable to move /proc"
+fi
+mount -o move /sys /mnt/root/sys
+if [ $? -ne 0 ]; then
+    panic "Unable to move /sys"
+fi
+
+zaionc
+
+# Start real init
+exec switch_root /mnt/root /sbin/init
+
+# By this point main init should take over. Go interactive
 panic

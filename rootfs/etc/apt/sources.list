@@ -1,0 +1,2 @@
+deb http://ftp.pl.debian.org/debian buster main contrib non-free
+deb-src http://ftp.pl.debian.org/debian buster main contrib non-free

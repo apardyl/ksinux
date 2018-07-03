@@ -1,6 +1,7 @@
 #!/bin/bash
 
-source ./versions.sh
+source versions
+source packages
 
 prepare_kernel () {
     if [ ! -d ./build/linux-"$KERNEL_VERSION" ]; then
@@ -140,11 +141,12 @@ build_busybox () {
 }
 
 prepare_initramfs () {
+    rm -rf ./build/initramfs
     echo "Copying source files"
     mkdir -p ./build/initramfs
     cp -af ./initramfs ./build/
     echo "Creating directory tree"
-    mkdir -p ./build/initramfs/{bin,dev,etc,lib,lib64,mnt/root,proc,root,sbin,sys,usr/bin,usr/sbin}
+    mkdir -p ./build/initramfs/{bin,dev,etc,lib,lib64,mnt/root,mnt/ro,/mnt/rw,/mnt/nfs,proc,root,sbin,sys,usr/bin,usr/sbin}
     echo "Creating devices (root required)"
     echo "sudo cp -au /dev/{null,zero,console,tty} ./build/initramfs/dev/"
     sudo cp -au /dev/{null,console,tty} ./build/initramfs/dev/
@@ -187,5 +189,89 @@ build_kernel_modules () {
 
 	echo "Building kernel modules"
 
-	( cd ./build/linux-"$KERNEL_VERSION" && make modules -j "$N_CPU" && make INSTALL_MOD_PATH=../env modules_install -j "$N_CPU")
+	( cd ./build/linux-"$KERNEL_VERSION" && make modules -j "$N_CPU")
+}
+
+prepare_debootstrap () {
+    if [ ! -d ./build/debootstrap-"$DEBOOTSTRAP_VERSION" ]; then
+        if [ ! -f ./deps/debootstrap-"$DEBOOTSTRAP_VERSION".tar.gz ]; then
+            echo "Fetching debootstrap sources"
+            mkdir -p ./deps
+            wget "http://http.debian.net/debian/pool/main/d/debootstrap/debootstrap_$DEBOOTSTRAP_VERSION.tar.gz" -O ./deps/debootstrap-"$DEBOOTSTRAP_VERSION".tar.gz
+        fi
+        echo "Unpacking debootstrap"
+        mkdir -p ./build
+        tar -xf ./deps/debootstrap-"$DEBOOTSTRAP_VERSION".tar.gz -C ./build
+    fi
+}
+
+# Run as root
+execute_debootstrap () {
+    prepare_debootstrap
+    if [ ! -d ./build/rootfs ]; then
+        mkdir -p ./build/rootfs
+        echo "Bootstraping rootfs"
+
+        export DEBOOTSTRAP_DIR=build/debootstrap-"$DEBOOTSTRAP_VERSION"
+        build/debootstrap-"$DEBOOTSTRAP_VERSION"/debootstrap --verbose --arch=amd64 --include=build-essential,libelf-dev "$DEBIAN_VERSION" ./build/rootfs http://ftp.pl.debian.org/debian/
+    fi
+}
+
+# Run as root
+setup_chroot () {
+    mount -t proc none build/rootfs/proc
+    mount --rbind /sys build/rootfs/sys
+    mount --make-rslave build/rootfs/sys
+    mount --rbind /dev build/rootfs/dev
+    mount --make-rslave build/rootfs/dev
+}
+
+# Run as root
+teardown_chroot () {
+    umount -l build/rootfs/dev{/shm,/pts}
+    umount -R build/rootfs{/dev,/proc,/sys}
+}
+
+# Run as root
+install_kernel_sources_and_modules () {
+    build_kernel_modules
+
+    echo "Installing kernel sources"
+    mkdir -p ./build/rootfs/usr/src
+    cp -rf --no-preserve=owner --preserve=mode,timestamps ./build/linux-"$KERNEL_VERSION" ./build/rootfs/usr/src/
+    ln -s /usr/src/linux-"$KERNEL_VERSION" ./build/rootfs/usr/src/linux
+
+    echo "Installing modules and headers"
+    chroot ./build/rootfs/ /bin/bash << EOF
+        cd /usr/src/linux-"$KERNEL_VERSION"
+        make modules_install
+EOF
+}
+
+# Run as root
+build_rootfs () {
+    echo "Removing old rootfs"
+    echo "sudo rm -rf ./build/rootfs"
+    rm -rf ./build/rootfs
+
+    execute_debootstrap
+
+    install_kernel_sources_and_modules
+
+    echo "Copying source files"
+    cp -rf --no-preserve=all ./rootfs ./build/
+
+    setup_chroot
+    chroot ./build/rootfs/ /bin/bash << EOF
+        export DEBIAN_FRONTEND=noninteractive
+        dpkg --add-architecture i386
+        apt update
+        apt upgrade -y
+        apt install --no-install-recommends dkms
+        apt install $DEBIAN_PACKAGES -y -o Dpkg::Options::="--force-confold"
+EOF
+    teardown_chroot
+
+    rm -f rootfs.squash
+    mksquashfs ./build/rootfs/ rootfs.squash -comp lz4 -xattrs
 }

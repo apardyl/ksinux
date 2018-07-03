@@ -2,6 +2,6 @@
 
 set -e
 
-source ./functions.sh
+source functions
 
 build_kernel_image

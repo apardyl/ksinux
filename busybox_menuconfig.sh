@@ -2,8 +2,8 @@
 
 set -e
 
-source ./functions.sh
-source ./versions.sh
+source functions
+source versions
 
 prepare_busybox
 
