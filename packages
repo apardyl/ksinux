@@ -1,4 +1,5 @@
 #!/bin/bash
 
-DEBIAN_PACKAGES="gnome chromium firefox-esr nano vim emacs wine32-development wine64-development screen libreoffice \
-    texlive vlc gcc gdb make binutils python3-pip python-pip git rsync gimp build-essential sssd htop ssh sshfs"
+DEBIAN_PACKAGES="xserver-xorg gnome chromium firefox-esr nano vim emacs wine32-development wine64-development screen libreoffice \
+    vlc gcc gdb make binutils python3-pip python-pip git rsync gimp build-essential sssd htop ssh sshfs sudo haveged"
+
