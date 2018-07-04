@@ -1,9 +1,13 @@
 #!/bin/bash
 
+# Linux kernel
 KERNEL_VERSION="4.16.18"
+
+# Initramfs
 GLIBC_VERSION="2.27"
 BUSYBOX_VERSION="1.28.4"
 
+# Rootfs
 DEBOOTSTRAP_VERSION="1.0.104"
 DEBIAN_VERSION="buster"
 

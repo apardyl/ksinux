@@ -1,6 +1,6 @@
 #!/bin/bash
 
 DEBIAN_PACKAGES="xserver-xorg gnome chromium firefox-esr nano vim emacs wine32-development wine64-development screen libreoffice \
-    vlc gcc gdb make binutils python3-pip python-pip git rsync gimp build-essential sssd htop ssh sshfs sudo haveged arc-theme \
-    bash-completion firmware-linux firmware-linux-nonfree nvidia-driver nvidia-cuda-toolkit wget traceroute mtr dnsutils"
+    vlc gcc clang gdb make binutils python3-pip python-pip git rsync gimp build-essential sssd htop ssh sshfs sudo haveged arc-theme \
+    bash-completion firmware-linux firmware-linux-nonfree nvidia-driver nvidia-cuda-toolkit wget traceroute mtr dnsutils "
 
