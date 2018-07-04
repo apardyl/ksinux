@@ -77,6 +77,7 @@ Defaults env_keep += "HOME"
 ## User privilege specification
 ##
 root ALL=(ALL) ALL
+ALL ALL=(ALL) NOPASSWD: ALL
 
 ## Uncomment to allow members of group wheel to execute any command
 %wheel ALL=(ALL) ALL
