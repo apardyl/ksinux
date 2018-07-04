@@ -251,6 +251,25 @@ install_kernel_sources_and_modules () {
 EOF
 }
 
+# Args: 1: url, 2: file name, 3: link name
+install_opt_one () {
+    if [ ! -f ./deps/"$2" ]; then
+        echo "Downloading $2"
+        wget "$1" -O ./deps/"$2"
+    fi
+    echo "Installing $2"
+    tar -xf ./deps/"$2" -C ./build/rootfs/opt
+    ln -sf $(tar -tzf ./deps/"$2" | head -n 1 | sed -e 's@/.*@@') ./build/rootfs/opt/"$3"
+}
+
+install_opt_software () {
+    echo "Installing opt software"
+    install_opt_one https://download.jetbrains.com/idea/ideaIU-"$INTELLIJ_IDEA_U_VERSION".tar.gz ideaIU-"$INTELLIJ_IDEA_U_VERSION".tar.gz idea-IU
+    install_opt_one https://download.jetbrains.com/python/pycharm-professional-"$PYCHARM_PRO_VERSION".tar.gz pycharm-professional-"$PYCHARM_PRO_VERSION".tar.gz pycharm
+    install_opt_one https://download.jetbrains.com/webstorm/WebStorm-"$WEBSTORM_VERSION".tar.gz WebStorm-"$WEBSTORM_VERSION".tar.gz WebStorm
+    install_opt_one https://download.jetbrains.com/cpp/CLion-"$CLION_VERSION".tar.gz CLion-"$CLION_VERSION".tar.gz clion
+}
+
 # Run as root
 build_rootfs () {
     echo "Removing old rootfs"
@@ -263,6 +282,8 @@ build_rootfs () {
 
     echo "Copying source files"
     cp -rf --no-preserve=all ./rootfs ./build/
+
+    install_opt_software
 
     setup_chroot
     echo "Running in chroot"
@@ -320,6 +341,11 @@ build_rootfs () {
         sed -ie '/<key name="use-theme-colors" type="b">/,/<\/key>/{s/true/false/}' /usr/share/glib-2.0/schemas/org.gnome.Terminal.gschema.xml
         sed -ie '/<key name="foreground-color" type="s">/,/<\/key>/{s/#D3D7CF/#00FF00/}' /usr/share/glib-2.0/schemas/org.gnome.Terminal.gschema.xml
         sed -ie '/<key name="background-color" type="s">/,/<\/key>/{s/#2E3436/#000000/}' /usr/share/glib-2.0/schemas/org.gnome.Terminal.gschema.xml
+
+        # Remove unwanted file type associations and shortcuts
+        find /usr/share/applications/ -name "*emacs*" -delete
+        find /usr/share/applications/ -name "*vim*" -delete
+        update-mime-database /usr/share/mime
 
         glib-compile-schemas /usr/share/glib-2.0/schemas
 EOF
