@@ -315,7 +315,7 @@ build_rootfs () {
         update-alternatives --set desktop-lockscreen.xml /usr/share/desktop-base/joy-theme/lockscreen/gnome-background.xml
         update-alternatives --set desktop-login-background /usr/share/desktop-base/joy-theme/login/background.svg
         update-alternatives --set desktop-theme /usr/share/desktop-base/joy-inksplat-theme
-        sed -ie '/<key name="gtk-theme" type="s">/,/<\/key>/{s/Adwiata/Arc-Darker/}' /usr/share/glib-2.0/schemas/org.gnome.desktop.interface.gschema.xml
+        sed -ie '/<key name="gtk-theme" type="s">/,/<\/key>/{s/Adwaita/Arc-Darker/}' /usr/share/glib-2.0/schemas/org.gnome.desktop.interface.gschema.xml
         sed -ie "/<key name=\"sources\" type=\"a(ss)\">/,/<\/key>/{s/\[\]/\[\('xkb', 'pl'\), \('xkb', 'us'\)\]/}" /usr/share/glib-2.0/schemas/org.gnome.desktop.input-sources.gschema.xml
         sed -ie '/<key name="use-theme-colors" type="b">/,/<\/key>/{s/true/false/}' /usr/share/glib-2.0/schemas/org.gnome.Terminal.gschema.xml
         sed -ie '/<key name="foreground-color" type="s">/,/<\/key>/{s/#D3D7CF/#00FF00/}' /usr/share/glib-2.0/schemas/org.gnome.Terminal.gschema.xml
@@ -327,4 +327,5 @@ EOF
 
     rm -f rootfs.squash
     mksquashfs ./build/rootfs/ rootfs.squash -comp lz4 -xattrs
+    du -hs rootfs.squash
 }
