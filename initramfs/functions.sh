@@ -1,8 +1,7 @@
 #!/bin/sh
 
 die () {
-    echo "CRITICAL ERROR!!!"
-    echo "Contact admin@ksi.ii.uj.edu.pl for help"
+    echo "!!!CRITICAL ERROR!!!"
     echo "Power off in 5s"
     sleep 5
     echo "Kill power"
@@ -10,12 +9,14 @@ die () {
     sleep 1
     echo "If you are seeing this the kernel failed to power off gracefully, kernel panic in 10s"
     sleep 10
+    exit
 }
 
 panic () {
     echo "!!!ERROR!!! $1"
     echo "Contact admin@ksi.ii.uj.edu.pl for help"
-    echo "Dropping to shell"
+    echo "Press ENTER to start interactive shell (going critical in 10s)"
+    read -t 10 || die
     setsid cttyhack sh
     die
 }

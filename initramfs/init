@@ -107,5 +107,5 @@ echo "Executing /sbin/init"
 # Start real init
 exec switch_root /mnt/root /sbin/init
 
-# By this point main init should take over. Go interactive
+# Exec failed. Go interactive
 panic

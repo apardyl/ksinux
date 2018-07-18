@@ -155,7 +155,6 @@ prepare_initramfs () {
     echo "sudo cp -au /dev/{null,zero,console,tty} ./build/initramfs/dev/"
     sudo cp -au /dev/{null,console,tty} ./build/initramfs/dev/
 
-    echo "Installing libs"
     install_libs
 
     build_busybox
