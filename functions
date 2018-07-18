@@ -183,7 +183,7 @@ build_kernel_image () {
 
 	( cd ./build/linux-"$KERNEL_VERSION" && make bzImage -j "$N_CPU" )
 
-	cp -a ./build/linux-"$KERNEL_VERSION"/arch/x86/boot/bzImage ./vmlinuz-"$KERNEL_VERSION"-ksinux
+	cp -a ./build/linux-"$KERNEL_VERSION"/arch/x86/boot/bzImage ./vmlinuz
 }
 
 build_kernel_modules () {
