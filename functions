@@ -3,6 +3,8 @@
 source versions
 source packages
 
+set -e
+
 prepare_kernel () {
     if [ ! -d ./build/linux-"$KERNEL_VERSION" ]; then
         if [ ! -f ./deps/linux-"$KERNEL_VERSION".tar.xz ]; then
@@ -14,6 +16,8 @@ prepare_kernel () {
         mkdir -p ./build
         tar -xf ./deps/linux-"$KERNEL_VERSION".tar.xz -C ./build
         cp ./configs/kernel ./build/linux-"$KERNEL_VERSION"/.config
+	echo "Running make oldconfig"
+	( cd ./build/linux-"$KERNEL_VERSION" && make oldconfig )
     fi
 }
 

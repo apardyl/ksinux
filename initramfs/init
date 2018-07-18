@@ -6,14 +6,14 @@ NFS_PATH="192.168.122.1:/srv/nfs"
 SQUASH_FS_PATH="rootfs.squash"
 
 # Mount the /dev, /proc and /sys filesystems.
-mount -t devtmpfs none /dev
-if [ $? -ne 0 ]; then
-    echo "Unable to mount /dev"
-    die
-fi
 mount -t proc none /proc
 if [ $? -ne 0 ]; then
     echo "Unable to mount /proc"
+    die
+fi
+mount -t devtmpfs none /dev
+if [ $? -ne 0 ]; then
+    echo "Unable to mount /dev"
     die
 fi
 mount -t sysfs none /sys
@@ -22,9 +22,7 @@ if [ $? -ne 0 ]; then
     die
 fi
 
-# Welcome message
-ksilogo
-uname -a
+zaionc
 
 # Setup network
 ip link set eth0 up
@@ -32,7 +30,7 @@ if [ $? -ne 0 ]; then
     panic "Unable to bring up network device eth0"
 fi
 
-udhcpc -n
+udhcpc -n -t 16
 if [ $? -ne 0 ]; then
     panic "DHCP client error"
 fi
@@ -101,7 +99,10 @@ if [ $? -ne 0 ]; then
     panic "Unable to move /sys"
 fi
 
-zaionc
+# Welcome message
+ksilogo
+uname -a
+echo "Executing /sbin/init"
 
 # Start real init
 exec switch_root /mnt/root /sbin/init
